@@ -33,14 +33,161 @@ class SNSApp {
         const savedUserName = localStorage.getItem('sns_user_name');
         if (savedUserName) {
             this.currentUserName = savedUserName;
+            // 화면에 사용자 이름 표시
+            this.displayUserName();
         } else {
-            // 랜덤 사용자 이름 생성
-            this.currentUserName = this.generateRandomUserName();
-            localStorage.setItem('sns_user_name', this.currentUserName);
+            // 처음 방문시 사용자 설정 모달 표시
+            this.showUserSetupModal();
         }
-        
-        // 화면에 사용자 이름 표시
-        this.displayUserName();
+    }
+
+    // 사용자 설정 모달 표시
+    showUserSetupModal() {
+        // 메인 컨텐츠 숨기기
+        const mainContent = document.querySelector('.layout-content-container');
+        if (mainContent) {
+            mainContent.style.display = 'none';
+        }
+
+        // 모달 생성
+        const modal = this.createUserSetupModal();
+        document.body.appendChild(modal);
+    }
+
+    // 사용자 설정 모달 생성
+    createUserSetupModal() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.id = 'user-setup-modal';
+
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold text-[#111418] mb-6 text-center">프로필 설정</h2>
+                
+                <!-- 사용자 이름 입력 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-[#111418] mb-2">사용자 이름</label>
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            id="username-input"
+                            class="flex-1 px-3 py-2 border border-[#dbe0e6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3d99f5]"
+                            placeholder="사용자 이름을 입력하세요"
+                            value="${this.generateRandomUserName()}"
+                        />
+                        <button 
+                            id="random-name-btn"
+                            class="px-4 py-2 bg-[#f0f2f5] text-[#111418] rounded-lg hover:bg-[#dbe0e6] transition-colors"
+                        >
+                            랜덤
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 프로필 이미지 선택 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-[#111418] mb-3">프로필 이미지</label>
+                    <div class="grid grid-cols-4 gap-3" id="profile-selection">
+                        ${this.profileImages.map((image, index) => `
+                            <div 
+                                class="profile-option w-16 h-16 bg-cover bg-center rounded-full border-2 border-transparent cursor-pointer hover:border-[#3d99f5] transition-colors"
+                                style="background-image: url('${image}')"
+                                data-index="${index}"
+                            ></div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- 버튼들 -->
+                <div class="flex gap-3">
+                    <button 
+                        id="setup-complete-btn"
+                        class="flex-1 bg-[#3d99f5] text-white py-2 px-4 rounded-lg hover:bg-[#2b7ce9] transition-colors"
+                    >
+                        시작하기
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // 이벤트 리스너 추가
+        this.setupModalEventListeners(modal);
+
+        return modal;
+    }
+
+    // 모달 이벤트 리스너 설정
+    setupModalEventListeners(modal) {
+        const usernameInput = modal.querySelector('#username-input');
+        const randomNameBtn = modal.querySelector('#random-name-btn');
+        const profileOptions = modal.querySelectorAll('.profile-option');
+        const completeBtn = modal.querySelector('#setup-complete-btn');
+
+        let selectedProfileIndex = 0; // 기본 선택
+        profileOptions[0].classList.add('border-[#3d99f5]'); // 첫 번째 프로필 기본 선택
+
+        // 랜덤 이름 생성 버튼
+        randomNameBtn.addEventListener('click', () => {
+            usernameInput.value = this.generateRandomUserName();
+        });
+
+        // 프로필 이미지 선택
+        profileOptions.forEach((option, index) => {
+            option.addEventListener('click', () => {
+                // 기존 선택 해제
+                profileOptions.forEach(opt => opt.classList.remove('border-[#3d99f5]'));
+                // 새로운 선택 적용
+                option.classList.add('border-[#3d99f5]');
+                selectedProfileIndex = index;
+            });
+        });
+
+        // 설정 완료 버튼
+        completeBtn.addEventListener('click', () => {
+            const userName = usernameInput.value.trim();
+            if (!userName) {
+                alert('사용자 이름을 입력해주세요!');
+                return;
+            }
+
+            // 사용자 정보 저장
+            this.currentUserName = userName;
+            localStorage.setItem('sns_user_name', userName);
+
+            // 선택한 프로필 이미지 저장
+            this.userAvatars[userName] = this.profileImages[selectedProfileIndex];
+            this.saveUserAvatars();
+
+            // 모달 제거 및 메인 컨텐츠 표시
+            this.closeUserSetupModal();
+            
+            // 화면에 사용자 이름 표시
+            this.displayUserName();
+            
+            // 게시물 목록 로드 (처음 설정 완료 후)
+            this.loadPosts();
+        });
+
+        // Enter 키로 설정 완료
+        usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                completeBtn.click();
+            }
+        });
+    }
+
+    // 사용자 설정 모달 닫기
+    closeUserSetupModal() {
+        const modal = document.getElementById('user-setup-modal');
+        if (modal) {
+            modal.remove();
+        }
+
+        // 메인 컨텐츠 표시
+        const mainContent = document.querySelector('.layout-content-container');
+        if (mainContent) {
+            mainContent.style.display = 'block';
+        }
     }
 
     // 사용자 이름 화면에 표시
@@ -94,8 +241,8 @@ class SNSApp {
         if (userNameDisplay && !userNameDisplay.querySelector('.change-name-btn')) {
             const changeButton = document.createElement('button');
             changeButton.className = 'change-name-btn ml-2 text-xs text-[#3d99f5] hover:underline';
-            changeButton.textContent = '변경';
-            changeButton.addEventListener('click', this.changeUserName.bind(this));
+            changeButton.textContent = '프로필 변경';
+            changeButton.addEventListener('click', this.showUserSetupModal.bind(this));
             userNameDisplay.appendChild(changeButton);
         }
     }
