@@ -39,10 +39,21 @@ class SNSApp {
             // 처음 방문시 사용자 설정 모달 표시
             this.showUserSetupModal();
         }
+        
+        // 초기 아바타 동기화 (기존 사용자인 경우)
+        if (savedUserName) {
+            setTimeout(() => this.syncAllAvatars(), 100); // DOM이 완전히 로드된 후 실행
+        }
     }
 
     // 사용자 설정 모달 표시
     showUserSetupModal() {
+        // 기존 모달이 있으면 제거
+        const existingModal = document.getElementById('user-setup-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
         // 메인 컨텐츠 숨기기
         const mainContent = document.querySelector('.layout-content-container');
         if (mainContent) {
@@ -73,7 +84,7 @@ class SNSApp {
                             id="username-input"
                             class="flex-1 px-3 py-2 border border-[#dbe0e6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3d99f5]"
                             placeholder="사용자 이름을 입력하세요"
-                            value="${this.generateRandomUserName()}"
+                            value="${this.currentUserName || this.generateRandomUserName()}"
                         />
                         <button 
                             id="random-name-btn"
@@ -90,10 +101,16 @@ class SNSApp {
                     <div class="grid grid-cols-4 gap-3" id="profile-selection">
                         ${this.profileImages.map((image, index) => `
                             <div 
-                                class="profile-option w-16 h-16 bg-cover bg-center rounded-full border-2 border-transparent cursor-pointer hover:border-[#3d99f5] transition-colors"
+                                class="profile-option relative w-16 h-16 bg-cover bg-center rounded-full border-3 border-transparent cursor-pointer hover:border-[#3d99f5] transition-all duration-200 hover:scale-105"
                                 style="background-image: url('${image}')"
                                 data-index="${index}"
-                            ></div>
+                            >
+                                <div class="selected-indicator absolute inset-0 bg-[#3d99f5] bg-opacity-20 rounded-full flex items-center justify-center opacity-0 transition-opacity duration-200">
+                                    <svg class="w-6 h-6 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         `).join('')}
                     </div>
                 </div>
@@ -123,8 +140,18 @@ class SNSApp {
         const profileOptions = modal.querySelectorAll('.profile-option');
         const completeBtn = modal.querySelector('#setup-complete-btn');
 
-        let selectedProfileIndex = 0; // 기본 선택
-        profileOptions[0].classList.add('border-[#3d99f5]'); // 첫 번째 프로필 기본 선택
+        // 현재 사용자의 프로필 이미지 인덱스 찾기
+        let selectedProfileIndex = 0;
+        const currentUserAvatar = this.userAvatars[this.currentUserName];
+        if (currentUserAvatar) {
+            const currentIndex = this.profileImages.indexOf(currentUserAvatar);
+            if (currentIndex !== -1) {
+                selectedProfileIndex = currentIndex;
+            }
+        }
+
+        // 현재 선택된 프로필에 선택 표시
+        this.updateProfileSelection(profileOptions[selectedProfileIndex], profileOptions);
 
         // 랜덤 이름 생성 버튼
         randomNameBtn.addEventListener('click', () => {
@@ -134,10 +161,8 @@ class SNSApp {
         // 프로필 이미지 선택
         profileOptions.forEach((option, index) => {
             option.addEventListener('click', () => {
-                // 기존 선택 해제
-                profileOptions.forEach(opt => opt.classList.remove('border-[#3d99f5]'));
-                // 새로운 선택 적용
-                option.classList.add('border-[#3d99f5]');
+                // 선택 상태 업데이트
+                this.updateProfileSelection(option, profileOptions);
                 selectedProfileIndex = index;
             });
         });
@@ -164,6 +189,9 @@ class SNSApp {
             // 화면에 사용자 이름 표시
             this.displayUserName();
             
+            // 모든 아바타 동기화
+            this.syncAllAvatars();
+            
             // 게시물 목록 로드 (처음 설정 완료 후)
             this.loadPosts();
         });
@@ -174,6 +202,54 @@ class SNSApp {
                 completeBtn.click();
             }
         });
+    }
+
+    // 프로필 선택 상태 업데이트
+    updateProfileSelection(selectedOption, allOptions) {
+        // 모든 옵션에서 선택 상태 제거
+        allOptions.forEach(option => {
+            option.classList.remove('border-[#3d99f5]', 'scale-105');
+            const indicator = option.querySelector('.selected-indicator');
+            if (indicator) {
+                indicator.classList.remove('opacity-100');
+                indicator.classList.add('opacity-0');
+            }
+        });
+
+        // 선택된 옵션에 선택 상태 추가
+        selectedOption.classList.add('border-[#3d99f5]', 'scale-105');
+        const selectedIndicator = selectedOption.querySelector('.selected-indicator');
+        if (selectedIndicator) {
+            selectedIndicator.classList.remove('opacity-0');
+            selectedIndicator.classList.add('opacity-100');
+        }
+    }
+
+    // 모든 아바타 동기화
+    syncAllAvatars() {
+        const currentUserAvatar = this.getUserAvatar(this.currentUserName);
+        
+        // 1. 입력 폼의 프로필 이미지 업데이트
+        this.updateFormAvatar(currentUserAvatar);
+        
+        // 2. GNB 헤더의 프로필 이미지 업데이트
+        this.updateHeaderAvatar(currentUserAvatar);
+    }
+
+    // 입력 폼의 아바타 업데이트
+    updateFormAvatar(avatarUrl) {
+        const formProfileImage = document.querySelector('.layout-content-container .bg-cover');
+        if (formProfileImage) {
+            formProfileImage.style.backgroundImage = `url("${avatarUrl}")`;
+        }
+    }
+
+    // 헤더의 아바타 업데이트
+    updateHeaderAvatar(avatarUrl) {
+        const headerProfileImage = document.querySelector('header .bg-cover');
+        if (headerProfileImage) {
+            headerProfileImage.style.backgroundImage = `url("${avatarUrl}")`;
+        }
     }
 
     // 사용자 설정 모달 닫기
@@ -197,16 +273,40 @@ class SNSApp {
         const userNameDisplay = header.querySelector('.user-name-display');
         
         if (!userNameDisplay) {
-            // 사용자 이름 표시 요소 생성
-            const userNameElement = document.createElement('div');
-            userNameElement.className = 'user-name-display text-sm text-[#60758a] mr-4';
-            userNameElement.textContent = `안녕하세요, ${this.currentUserName}님!`;
+            // 사용자 이름과 버튼들을 담을 컨테이너 생성
+            const userContainer = document.createElement('div');
+            userContainer.className = 'user-name-display flex items-center gap-2 mr-4';
+            
+            // 사용자 이름 텍스트
+            const userNameText = document.createElement('span');
+            userNameText.className = 'text-sm text-[#60758a]';
+            userNameText.textContent = `안녕하세요, ${this.currentUserName}님!`;
+            
+            // 프로필 변경 버튼
+            const changeButton = document.createElement('button');
+            changeButton.className = 'text-xs text-[#3d99f5] hover:underline';
+            changeButton.textContent = '프로필 변경';
+            changeButton.addEventListener('click', this.showUserSetupModal.bind(this));
+            
+            // 로그아웃 버튼
+            const logoutButton = document.createElement('button');
+            logoutButton.className = 'text-xs text-[#dc2626] hover:underline ml-1';
+            logoutButton.textContent = '로그아웃';
+            logoutButton.addEventListener('click', this.logout.bind(this));
+            
+            userContainer.appendChild(userNameText);
+            userContainer.appendChild(changeButton);
+            userContainer.appendChild(logoutButton);
             
             // 프로필 이미지 앞에 삽입
             const profileImage = header.querySelector('.bg-cover');
-            profileImage.parentNode.insertBefore(userNameElement, profileImage);
+            profileImage.parentNode.insertBefore(userContainer, profileImage);
         } else {
-            userNameDisplay.textContent = `안녕하세요, ${this.currentUserName}님!`;
+            // 기존 요소가 있으면 사용자 이름만 업데이트
+            const userNameText = userNameDisplay.querySelector('span');
+            if (userNameText) {
+                userNameText.textContent = `안녕하세요, ${this.currentUserName}님!`;
+            }
         }
     }
 
@@ -229,36 +329,28 @@ class SNSApp {
             });
         }
 
-        // 사용자 이름 변경 버튼 추가
-        this.addUserNameChangeButton();
     }
 
-    // 사용자 이름 변경 버튼 추가
-    addUserNameChangeButton() {
-        const header = document.querySelector('header');
-        const userNameDisplay = header.querySelector('.user-name-display');
-        
-        if (userNameDisplay && !userNameDisplay.querySelector('.change-name-btn')) {
-            const changeButton = document.createElement('button');
-            changeButton.className = 'change-name-btn ml-2 text-xs text-[#3d99f5] hover:underline';
-            changeButton.textContent = '프로필 변경';
-            changeButton.addEventListener('click', this.showUserSetupModal.bind(this));
-            userNameDisplay.appendChild(changeButton);
+    // 로그아웃 기능
+    logout() {
+        if (confirm('로그아웃하시겠습니까? 새로운 프로필을 설정할 수 있습니다.')) {
+            // 로컬스토리지에서 사용자 정보 제거
+            localStorage.removeItem('sns_user_name');
+            localStorage.removeItem('sns_user_avatars');
+            
+            // 사용자 상태 초기화
+            this.currentUserName = '익명사용자';
+            this.userAvatars = {};
+            
+            // 헤더에서 사용자 정보 제거
+            const userNameDisplay = document.querySelector('.user-name-display');
+            if (userNameDisplay) {
+                userNameDisplay.remove();
+            }
+            
+            // 프로필 설정 모달 다시 표시
+            this.showUserSetupModal();
         }
-    }
-
-    // 사용자 이름 변경
-    changeUserName() {
-        const newUserName = this.generateRandomUserName();
-        this.currentUserName = newUserName;
-        localStorage.setItem('sns_user_name', this.currentUserName);
-        
-        // 새 사용자 이름에 대한 아바타 생성
-        this.assignUserAvatar(this.currentUserName);
-        this.saveUserAvatars();
-        
-        this.displayUserName();
-        this.addUserNameChangeButton(); // 버튼 다시 추가
     }
 
     // 사용자별 아바타 로드
@@ -339,15 +431,53 @@ class SNSApp {
     // 게시물 목록 로드
     async loadPosts() {
         try {
+            // 로딩 스피너 표시
+            this.showLoadingSpinner();
+            
             const result = await supabaseClient.getPosts();
             if (result.success) {
                 this.renderPosts(result.data);
             } else {
                 console.error('게시물 로드 실패:', result.error);
+                this.hideLoadingSpinner();
+                this.showErrorMessage('게시물을 불러오는데 실패했습니다.');
             }
         } catch (error) {
             console.error('게시물 로드 중 오류:', error);
+            this.hideLoadingSpinner();
+            this.showErrorMessage('게시물을 불러오는 중 오류가 발생했습니다.');
         }
+    }
+
+    // 로딩 스피너 표시
+    showLoadingSpinner() {
+        const loadingSpinner = document.getElementById('loading-spinner');
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'flex';
+        }
+    }
+
+    // 로딩 스피너 숨기기
+    hideLoadingSpinner() {
+        const loadingSpinner = document.getElementById('loading-spinner');
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'none';
+        }
+    }
+
+    // 에러 메시지 표시
+    showErrorMessage(message) {
+        const postsContainer = document.querySelector('.layout-content-container');
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'flex flex-col items-center justify-center py-12 text-center';
+        errorMessage.innerHTML = `
+            <div class="text-6xl mb-4">⚠️</div>
+            <p class="text-[#dc2626] text-lg mb-2">${message}</p>
+            <button class="mt-4 px-4 py-2 bg-[#3d99f5] text-white rounded-lg hover:bg-[#2b7ce9] transition-colors" onclick="location.reload()">
+                다시 시도
+            </button>
+        `;
+        postsContainer.appendChild(errorMessage);
     }
 
     // 게시물 목록 렌더링
@@ -355,14 +485,33 @@ class SNSApp {
         const postsContainer = document.querySelector('.layout-content-container');
         const recentPostsSection = postsContainer.querySelector('h3');
         
+        // 로딩 스피너 숨기기
+        const loadingSpinner = document.getElementById('loading-spinner');
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'none';
+        }
+        
         // 기존 게시물들 제거 (Recent Posts 제목 이후의 모든 게시물)
         let nextElement = recentPostsSection.nextElementSibling;
         while (nextElement) {
             const toRemove = nextElement;
             nextElement = nextElement.nextElementSibling;
-            if (toRemove.classList.contains('flex') && toRemove.classList.contains('w-full')) {
+            if (toRemove.classList && (toRemove.classList.contains('flex') && toRemove.classList.contains('w-full'))) {
                 toRemove.remove();
             }
+        }
+
+        // 게시물이 없는 경우 메시지 표시
+        if (!posts || posts.length === 0) {
+            const noPostsMessage = document.createElement('div');
+            noPostsMessage.className = 'flex flex-col items-center justify-center py-12 text-center';
+            noPostsMessage.innerHTML = `
+                <div class="text-6xl mb-4">📝</div>
+                <p class="text-[#60758a] text-lg mb-2">아직 게시물이 없습니다</p>
+                <p class="text-[#60758a] text-sm">첫 번째 게시물을 작성해보세요!</p>
+            `;
+            postsContainer.appendChild(noPostsMessage);
+            return;
         }
 
         // 새로운 게시물들 추가

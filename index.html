@@ -65,62 +65,72 @@
               </label>
             </div>
             <h3 class="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Recent Posts</h3>
-            <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
-              <div
-                class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDacPeKX6OLLy_jCLRUZb4qmjrFFU7LqkMNBudXvPHrxAzmmV0bXVOejRFOBCj7mwHeydXwXGWMr6nuS0357fmF73grB6ZQU67X89IOvZIt4zrvvm_0Zz-FWE8O5N39OHDPWhPGAvY1lth9jO4qAyoQRQjgRtnFoZYLhmFy7gjghwh8ecBYNeJUOHsKlFVb5RX12YAJvcZ0pLhciMKhS6Uzrkc3xzdxZ7NWM2e19H2QcWD2lG0RYCuV630yc1LpYYbYfFSVWHGr1Xc");'
-              ></div>
-              <div class="flex h-full flex-1 flex-col items-start justify-start">
-                <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                  <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Sophia Carter</p>
-                  <p class="text-[#60758a] text-sm font-normal leading-normal">2h ago</p>
-                </div>
-                <p class="text-[#111418] text-sm font-normal leading-normal">
-                  Just finished an amazing study session on quantum physics! Feeling energized and ready to tackle more challenges. #Physics #Study
-                </p>
-              </div>
+            
+            <!-- 로딩 스피너 -->
+            <div id="loading-spinner" class="flex flex-col items-center justify-center py-12">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3d99f5] mb-4"></div>
+              <p class="text-[#60758a] text-sm">게시물을 불러오는 중...</p>
             </div>
-            <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
-              <div
-                class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDuLMAItjJMXIl4bA6wHUZWellDgg99V-YCOGKkvkFrX53HImD-IX2-UoK-6i99FqxNgVCLJtbqbPbaY9dF22ojia3SEL1UEaAxFYKncUHt4Ky18GZom2wtLEkiWeuDkjwTUJbl1gGdRItqYNdzvasJCHHEgGEoWabC2rT4GppeNylKyHAOvwQ4FkWvfB4y-Cp4MaqVJzwKkXobqcXcjFdId3SPEUicbVyYK3eO_iPu8t6ZsczSFByeD4GHbbNjSsb3wflFbaZ9dAc");'
-              ></div>
-              <div class="flex h-full flex-1 flex-col items-start justify-start">
-                <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                  <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Ethan Bennett</p>
-                  <p class="text-[#60758a] text-sm font-normal leading-normal">4h ago</p>
+
+            <!-- 하드코딩된 게시물들은 숨김 처리 -->
+            <div id="hardcoded-posts" style="display: none;">
+              <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
+                <div
+                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDacPeKX6OLLy_jCLRUZb4qmjrFFU7LqkMNBudXvPHrxAzmmV0bXVOejRFOBCj7mwHeydXwXGWMr6nuS0357fmF73grB6ZQU67X89IOvZIt4zrvvm_0Zz-FWE8O5N39OHDPWhPGAvY1lth9jO4qAyoQRQjgRtnFoZYLhmFy7gjghwh8ecBYNeJUOHsKlFVb5RX12YAJvcZ0pLhciMKhS6Uzrkc3xzdxZ7NWM2e19H2QcWD2lG0RYCuV630yc1LpYYbYfFSVWHGr1Xc");'
+                ></div>
+                <div class="flex h-full flex-1 flex-col items-start justify-start">
+                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
+                    <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Sophia Carter</p>
+                    <p class="text-[#60758a] text-sm font-normal leading-normal">2h ago</p>
+                  </div>
+                  <p class="text-[#111418] text-sm font-normal leading-normal">
+                    Just finished an amazing study session on quantum physics! Feeling energized and ready to tackle more challenges. #Physics #Study
+                  </p>
                 </div>
-                <p class="text-[#111418] text-sm font-normal leading-normal">
-                  Excited to announce that I'll be hosting a workshop on effective study techniques next week. Stay tuned for more details! #StudyTips #Education
-                </p>
               </div>
-            </div>
-            <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
-              <div
-                class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAadqWTW8F0krd9tphjiK3W201xNMsewPKu6RyngLwzvM9-ifRwp-hFsqPPhmT2d8QBusE14T13xXvQ1HvMg-_KgY8T2UqM6C6v5zcd4I_QW1rqbvmwx2m68ODIP0C7j6q-TTQlP_3Rpx1QaOUTvyoUEF7__vgPKV_pqjrBv2ofGyqinSqHhPZrPZM2GeEVuwoEs2lv3c021kzl9A4QhSjNb_T5vo3_tjYUNjFIn686gIEBRSk6H7AHO4YJs1CmZgWSKJ841YQOazQ");'
-              ></div>
-              <div class="flex h-full flex-1 flex-col items-start justify-start">
-                <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                  <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Olivia Harper</p>
-                  <p class="text-[#60758a] text-sm font-normal leading-normal">6h ago</p>
+              <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
+                <div
+                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDuLMAItjJMXIl4bA6wHUZWellDgg99V-YCOGKkvkFrX53HImD-IX2-UoK-6i99FqxNgVCLJtbqbPbaY9dF22ojia3SEL1UEaAxFYKncUHt4Ky18GZom2wtLEkiWeuDkjwTUJbl1gGdRItqYNdzvasJCHHEgGEoWabC2rT4GppeNylKyHAOvwQ4FkWvfB4y-Cp4MaqVJzwKkXobqcXcjFdId3SPEUicbVyYK3eO_iPu8t6ZsczSFByeD4GHbbNjSsb3wflFbaZ9dAc");'
+                ></div>
+                <div class="flex h-full flex-1 flex-col items-start justify-start">
+                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
+                    <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Ethan Bennett</p>
+                    <p class="text-[#60758a] text-sm font-normal leading-normal">4h ago</p>
+                  </div>
+                  <p class="text-[#111418] text-sm font-normal leading-normal">
+                    Excited to announce that I'll be hosting a workshop on effective study techniques next week. Stay tuned for more details! #StudyTips #Education
+                  </p>
                 </div>
-                <p class="text-[#111418] text-sm font-normal leading-normal">Looking for study partners for the upcoming calculus exam. Anyone interested? #Math #StudyGroup</p>
               </div>
-            </div>
-            <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
-              <div
-                class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA7hObheWSPlJKoZ-v-C1eQ1AbSQpihwZGJntoEiUQkJnRxA7czi_-bTpcfzQt_ImwSkl0mc0b4KNG7NWsOYPn329XepdxzVQnu3-Y8vG4pBipM7EPrKqf0uB_3flP76C1limeCwX-_6Fz3qYPQgsLaL6CxItDaUnrA9XYputYj2f03J_zETMDGEmjOeujV1LJoNO4l5EYlICKZXKMbIIo2F4dsN7kRAegQNe8VplDaUirj-iviYe8H_hz-YE06qidLD8x0ycEctjE");'
-              ></div>
-              <div class="flex h-full flex-1 flex-col items-start justify-start">
-                <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                  <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Liam Foster</p>
-                  <p class="text-[#60758a] text-sm font-normal leading-normal">8h ago</p>
+              <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
+                <div
+                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAadqWTW8F0krd9tphjiK3W201xNMsewPKu6RyngLwzvM9-ifRwp-hFsqPPhmT2d8QBusE14T13xXvQ1HvMg-_KgY8T2UqM6C6v5zcd4I_QW1rqbvmwx2m68ODIP0C7j6q-TTQlP_3Rpx1QaOUTvyoUEF7__vgPKV_pqjrBv2ofGyqinSqHhPZrPZM2GeEVuwoEs2lv3c021kzl9A4QhSjNb_T5vo3_tjYUNjFIn686gIEBRSk6H7AHO4YJs1CmZgWSKJ841YQOazQ");'
+                ></div>
+                <div class="flex h-full flex-1 flex-col items-start justify-start">
+                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
+                    <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Olivia Harper</p>
+                    <p class="text-[#60758a] text-sm font-normal leading-normal">6h ago</p>
+                  </div>
+                  <p class="text-[#111418] text-sm font-normal leading-normal">Looking for study partners for the upcoming calculus exam. Anyone interested? #Math #StudyGroup</p>
                 </div>
-                <p class="text-[#111418] text-sm font-normal leading-normal">
-                  Just discovered a fantastic resource for learning programming languages. Check it out! [link] #Programming #Resources
-                </p>
+              </div>
+              <div class="flex w-full flex-row items-start justify-start gap-3 p-4">
+                <div
+                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0"
+                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA7hObheWSPlJKoZ-v-C1eQ1AbSQpihwZGJntoEiUQkJnRxA7czi_-bTpcfzQt_ImwSkl0mc0b4KNG7NWsOYPn329XepdxzVQnu3-Y8vG4pBipM7EPrKqf0uB_3flP76C1limeCwX-_6Fz3qYPQgsLaL6CxItDaUnrA9XYputYj2f03J_zETMDGEmjOeujV1LJoNO4l5EYlICKZXKMbIIo2F4dsN7kRAegQNe8VplDaUirj-iviYe8H_hz-YE06qidLD8x0ycEctjE");'
+                ></div>
+                <div class="flex h-full flex-1 flex-col items-start justify-start">
+                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
+                    <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">Liam Foster</p>
+                    <p class="text-[#60758a] text-sm font-normal leading-normal">8h ago</p>
+                  </div>
+                  <p class="text-[#111418] text-sm font-normal leading-normal">
+                    Just discovered a fantastic resource for learning programming languages. Check it out! [link] #Programming #Resources
+                  </p>
+                </div>
               </div>
             </div>
           </div>
