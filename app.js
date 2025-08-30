@@ -2,8 +2,16 @@
 class SNSApp {
     constructor() {
         this.currentUserName = '익명사용자'; // 기본 사용자 이름
+        this.userAvatars = {}; // 사용자별 아바타 저장
+        this.profileImages = [
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuDacPeKX6OLLy_jCLRUZb4qmjrFFU7LqkMNBudXvPHrxAzmmV0bXVOejRFOBCj7mwHeydXwXGWMr6nuS0357fmF73grB6ZQU67X89IOvZIt4zrvvm_0Zz-FWE8O5N39OHDPWhPGAvY1lth9jO4qAyoQRQjgRtnFoZYLhmFy7gjghwh8ecBYNeJUOHsKlFVb5RX12YAJvcZ0pLhciMKhS6Uzrkc3xzdxZ7NWM2e19H2QcWD2lG0RYCuV630yc1LpYYbYfFSVWHGr1Xc',
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuDuLMAItjJMXIl4bA6wHUZWellDgg99V-YCOGKkvkFrX53HImD-IX2-UoK-6i99FqxNgVCLJtbqbPbaY9dF22ojia3SEL1UEaAxFYKncUHt4Ky18GZom2wtLEkiWeuDkjwTUJbl1gGdRItqYNdzvasJCHHEgGEoWabC2rT4GppeNylKyHAOvwQ4FkWvfB4y-Cp4MaqVJzwKkXobqcXcjFdId3SPEUicbVyYK3eO_iPu8t6ZsczSFByeD4GHbbNjSsb3wflFbaZ9dAc',
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuAadqWTW8F0krd9tphjiK3W201xNMsewPKu6RyngLwzvM9-ifRwp-hFsqPPhmT2d8QBusE14T13xXvQ1HvMg-_KgY8T2UqM6C6v5zcd4I_QW1rqbvmwx2m68ODIP0C7j6q-TTQlP_3Rpx1QaOUTvyoUEF7__vgPKV_pqjrBv2ofGyqinSqHhPZrPZM2GeEVuwoEs2lv3c021kzl9A4QhSjNb_T5vo3_tjYUNjFIn686gIEBRSk6H7AHO4YJs1CmZgWSKJ841YQOazQ',
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuA7hObheWSPlJKoZ-v-C1eQ1AbSQpihwZGJntoEiUQkJnRxA7czi_-bTpcfzQt_ImwSkl0mc0b4KNG7NWsOYPn329XepdxzVQnu3-Y8vG4pBipM7EPrKqf0uB_3flP76C1limeCwX-_6Fz3qYPQgsLaL6CxItDaUnrA9XYputYj2f03J_zETMDGEmjOeujV1LJoNO4l5EYlICKZXKMbIIo2F4dsN7kRAegQNe8VplDaUirj-iviYe8H_hz-YE06qidLD8x0ycEctjE'
+        ];
         this.initializeEventListeners();
         this.setupUserName();
+        this.loadUserAvatars(); // 사용자별 아바타 로드
         this.loadPosts(); // 페이지 로드 시 게시물 불러오기
     }
 
@@ -97,8 +105,48 @@ class SNSApp {
         const newUserName = this.generateRandomUserName();
         this.currentUserName = newUserName;
         localStorage.setItem('sns_user_name', this.currentUserName);
+        
+        // 새 사용자 이름에 대한 아바타 생성
+        this.assignUserAvatar(this.currentUserName);
+        this.saveUserAvatars();
+        
         this.displayUserName();
         this.addUserNameChangeButton(); // 버튼 다시 추가
+    }
+
+    // 사용자별 아바타 로드
+    loadUserAvatars() {
+        const savedAvatars = localStorage.getItem('sns_user_avatars');
+        if (savedAvatars) {
+            this.userAvatars = JSON.parse(savedAvatars);
+        }
+    }
+
+    // 사용자별 아바타 저장
+    saveUserAvatars() {
+        localStorage.setItem('sns_user_avatars', JSON.stringify(this.userAvatars));
+    }
+
+    // 사용자에게 아바타 할당
+    assignUserAvatar(userName) {
+        if (!this.userAvatars[userName]) {
+            // 사용자 이름을 기반으로 일관된 랜덤 인덱스 생성
+            let hash = 0;
+            for (let i = 0; i < userName.length; i++) {
+                const char = userName.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 32bit 정수로 변환
+            }
+            const index = Math.abs(hash) % this.profileImages.length;
+            this.userAvatars[userName] = this.profileImages[index];
+            this.saveUserAvatars();
+        }
+        return this.userAvatars[userName];
+    }
+
+    // 사용자 아바타 가져오기
+    getUserAvatar(userName) {
+        return this.assignUserAvatar(userName);
     }
 
     // 게시물 작성 처리
@@ -182,18 +230,12 @@ class SNSApp {
         const postDiv = document.createElement('div');
         postDiv.className = 'flex w-full flex-row items-start justify-start gap-3 p-4';
         
-        // 프로필 이미지 (랜덤 생성)
-        const profileImages = [
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuDacPeKX6OLLy_jCLRUZb4qmjrFFU7LqkMNBudXvPHrxAzmmV0bXVOejRFOBCj7mwHeydXwXGWMr6nuS0357fmF73grB6ZQU67X89IOvZIt4zrvvm_0Zz-FWE8O5N39OHDPWhPGAvY1lth9jO4qAyoQRQjgRtnFoZYLhmFy7gjghwh8ecBYNeJUOHsKlFVb5RX12YAJvcZ0pLhciMKhS6Uzrkc3xzdxZ7NWM2e19H2QcWD2lG0RYCuV630yc1LpYYbYfFSVWHGr1Xc',
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuDuLMAItjJMXIl4bA6wHUZWellDgg99V-YCOGKkvkFrX53HImD-IX2-UoK-6i99FqxNgVCLJtbqbPbaY9dF22ojia3SEL1UEaAxFYKncUHt4Ky18GZom2wtLEkiWeuDkjwTUJbl1gGdRItqYNdzvasJCHHEgGEoWabC2rT4GppeNylKyHAOvwQ4FkWvfB4y-Cp4MaqVJzwKkXobqcXcjFdId3SPEUicbVyYK3eO_iPu8t6ZsczSFByeD4GHbbNjSsb3wflFbaZ9dAc',
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuAadqWTW8F0krd9tphjiK3W201xNMsewPKu6RyngLwzvM9-ifRwp-hFsqPPhmT2d8QBusE14T13xXvQ1HvMg-_KgY8T2UqM6C6v5zcd4I_QW1rqbvmwx2m68ODIP0C7j6q-TTQlP_3Rpx1QaOUTvyoUEF7__vgPKV_pqjrBv2ofGyqinSqHhPZrPZM2GeEVuwoEs2lv3c021kzl9A4QhSjNb_T5vo3_tjYUNjFIn686gIEBRSk6H7AHO4YJs1CmZgWSKJ841YQOazQ',
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuA7hObheWSPlJKoZ-v-C1eQ1AbSQpihwZGJntoEiUQkJnRxA7czi_-bTpcfzQt_ImwSkl0mc0b4KNG7NWsOYPn329XepdxzVQnu3-Y8vG4pBipM7EPrKqf0uB_3flP76C1limeCwX-_6Fz3qYPQgsLaL6CxItDaUnrA9XYputYj2f03J_zETMDGEmjOeujV1LJoNO4l5EYlICKZXKMbIIo2F4dsN7kRAegQNe8VplDaUirj-iviYe8H_hz-YE06qidLD8x0ycEctjE'
-        ];
-        const randomImage = profileImages[Math.floor(Math.random() * profileImages.length)];
+        // 사용자별 고유 아바타 가져오기
+        const userAvatar = this.getUserAvatar(post.user_name);
 
         postDiv.innerHTML = `
             <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0" 
-                 style='background-image: url("${randomImage}");'></div>
+                 style='background-image: url("${userAvatar}");'></div>
             <div class="flex h-full flex-1 flex-col items-start justify-start">
                 <div class="flex w-full flex-row items-start justify-start gap-x-3">
                     <p class="text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]">${post.user_name}</p>
