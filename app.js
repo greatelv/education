@@ -328,7 +328,6 @@ class SNSApp {
                 }
             });
         }
-
     }
 
     // 로그아웃 기능
@@ -405,8 +404,11 @@ class SNSApp {
         postButton.disabled = true;
 
         try {
-            // Supabase에 게시물 생성
-            const result = await supabaseClient.createPost(this.currentUserName, content);
+            // 현재 사용자의 프로필 썸네일 가져오기
+            const userThumbnail = this.getUserAvatar(this.currentUserName);
+
+            // Supabase에 게시물 생성 (사용자 프로필 썸네일과 함께)
+            const result = await supabaseClient.createPost(this.currentUserName, content, userThumbnail);
 
             if (result.success) {
                 // 성공시 textarea 초기화
@@ -526,8 +528,8 @@ class SNSApp {
         const postDiv = document.createElement('div');
         postDiv.className = 'flex w-full flex-row items-start justify-start gap-3 p-4';
         
-        // 사용자별 고유 아바타 가져오기
-        const userAvatar = this.getUserAvatar(post.user_name);
+        // 데이터베이스에 저장된 사용자 프로필 썸네일 사용, 없으면 기본 아바타 사용
+        const userAvatar = post.user_thumb || this.getUserAvatar(post.user_name);
 
         postDiv.innerHTML = `
             <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0" 

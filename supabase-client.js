@@ -8,14 +8,17 @@ class SupabaseClient {
     }
 
     // 게시물 생성
-    async createPost(userName, content) {
+    async createPost(userName, content, userThumbnailUrl) {
         try {
+            const postData = {
+                user_name: userName,
+                content: content,
+                user_thumb: userThumbnailUrl // 사용자 프로필 썸네일
+            };
+
             const { data, error } = await this.supabase
                 .from('posting')
-                .insert({
-                    user_name: userName,
-                    content: content
-                })
+                .insert(postData)
                 .select(); // 생성된 데이터 반환
 
             if (error) {
