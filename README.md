@@ -1,0 +1,2 @@
+- Supabase URL: https://cigcharcsgyunqklofmq.supabase.co
+- Supabase anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpZ2NoYXJjc2d5dW5xa2xvZm1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1MjQzNTUsImV4cCI6MjA3MjEwMDM1NX0.cZuCw4BrGxyOTQDhNuXfp5ZvEnzz6cOAAPPZJsDXPUk
